@@ -103,7 +103,7 @@
 							$current_word = $character;
 							$mode = 'whitespace';
 						} else {
-							if( ctype_alnum( $character ) && ( strlen($current_word) == 0 || ctype_alnum( $current_word ) ) ) {
+							if( $this->IsAlphaNum( $character ) && ( strlen($current_word) == 0 || $this->IsAlphaNum( $current_word ) ) ) {
 								$current_word .= $character;
 							} else {
 								$words[] = $current_word;
@@ -163,6 +163,10 @@
 
 		private function IsWhiteSpace( $value ) {
 			return !preg_match( '[^\s]', $value );
+		}
+
+		private function IsAlphaNum( $value ) {
+			return preg_match( '/[\p{L}\p{N}]+/u', $value );
 		}
 
 		private function Explode( $value ) {
