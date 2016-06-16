@@ -18,6 +18,17 @@
 			$this->encoding = $encoding;
 			$this->content = '';
 		}
+		
+		public function getFiles($files = array()) {
+			$oldText = (isset($files['oldText']) ? $files['oldText'] : '');
+			$newText = (isset($files['newText']) ? $files['newText'] : '');
+			$encoding = (isset($arr['encoding']) ? $arr['encoding'] : 'UTF-8');
+		
+			$this->oldText = $this->purifyHtml( trim( $oldText ) );
+			$this->newText = $this->purifyHtml( trim( $newText ) );
+			$this->encoding = $encoding;
+			$this->content = '';
+		}
 
 		public function getOldHtml() {
 			return $this->oldText;
