@@ -412,7 +412,7 @@
 					if( $indexInNew >= $endInNew ) {
 						break;
 					}
-					$newMatchLength = ( isset( $matchLengthAt[ $indexInNew - 1 ] ) ? $matchLengthAt[ $indexInNew - 1 ] : 0 ) + 1;
+					$newMatchLength = ( isset( $matchLengthAt[ $indexInNew - 1 ] ) ? $matchLengthAt[ $indexInNew - 1 ] + 1: 0 );
 					$newMatchLengthAt[ $indexInNew ] = $newMatchLength;
 					if( $newMatchLength > $bestMatchSize ) {
 						$bestMatchInOld = $indexInOld - $newMatchLength + 1;
