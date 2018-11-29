@@ -263,7 +263,7 @@
 						}
 					}
 				}
-				if( count( $words ) == 0 && count( $specialCaseTagInjection ) == 0 ) {
+				if( count( $words ) == 0 && !empty( $specialCaseTagInjection ) ) {
 					break;
 				}
 				if( $specialCaseTagInjectionIsBefore ) {
@@ -357,7 +357,7 @@
 				if( $action != 'none' ) {
 					$operations[] = new Operation( $action, $positionInOld, $match->StartInOld, $positionInNew, $match->StartInNew );
 				}
-				if( count( $match ) != 0 ) {
+				if( isset( $match ) ) {
 					$operations[] = new Operation( 'equal', $match->StartInOld, $match->EndInOld(), $match->StartInNew, $match->EndInNew() );
 				}
 				$positionInOld = $match->EndInOld();
