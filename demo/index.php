@@ -3,7 +3,7 @@
 	require_once( '../HtmlDiff.php' );
 	$html1 = "<p><i>This is</i> some sample text to <strong>demonstrate</strong> the capability of the <strong>HTML diff tool</strong>.</p>
                                 <p>It is based on the <b>Ruby</b> implementation found <a href='http://github.com/myobie/htmldiff'>here</a>. Note how the link has no tooltip</p>
-                                <table cellpadding='0' cellspacing='0'>
+                                <table cellpadding='2' cellspacing='1'>
                                 <tr><td>Some sample text</td><td>Some sample value</td></tr>
                                 <tr><td>Data 1 (this row will be removed)</td><td>Data 2</td></tr>
                                 </table>
