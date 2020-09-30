@@ -9,3 +9,4 @@ This is also available in C# at https://github.com/Rohland/htmldiff.net.
 License
 -------
 php-htmldiff is available under [GNU General Public License, version 2] (http://www.gnu.org/licenses/gpl-2.0.html).
+//important links
