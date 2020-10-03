@@ -1,6 +1,6 @@
 php-htmldiff
 =======
-*A library for comparing two HTML files/snippets and highlighting the differences using simple HTML.*
+*A library for comparing two HTML files/snippets and highlighting the difference using simple HTML.*
 
 This HTML Diff implementation is a PHP port of the ruby implementation found at https://github.com/myobie/htmldiff.
 
