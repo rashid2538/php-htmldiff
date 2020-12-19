@@ -23,8 +23,8 @@
         "php": ">=5.3.0"
     },
     "autoload": {
-        "files": [
-            "HtmlDiff.php"
-        ]
+        "psr-4": {
+            "HtmlDiff\\": "src/"
+        }
     }
 }
