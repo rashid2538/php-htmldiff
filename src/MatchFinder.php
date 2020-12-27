@@ -47,7 +47,8 @@ class MatchFinder
 
     private function putNewWord(&$block, $word, $blockSize)
     {
-        array_unshift($block, $word);
+        var_dump('Arguments', func_get_args());
+        $block[] = $word;
         if (count($block) > $blockSize) {
             array_splice($block, 0, 1);
         }
@@ -101,6 +102,8 @@ class MatchFinder
         for ($indexInOld = $this->_startInOld; $indexInOld < $this->_endInOld; $indexInOld++) {
             $word = $this->normalizeForIndex($this->_oldWords[$indexInOld]);
             $index = $this->putNewWord($block, $word, $this->_options->blockSize);
+
+            var_dump( "Word:Index::$word:$index");
 
             if (is_null($index)) {
                 continue;

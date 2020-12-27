@@ -2,7 +2,8 @@
 
 namespace HtmlDiff;
 
-class Operation {
+class Operation
+{
 
     public $action;
     public $startInOld;
@@ -10,7 +11,8 @@ class Operation {
     public $startInNew;
     public $endInNew;
 
-    function __construct($action, $startInOld, $endInOld, $startInNew, $endInNew) {
+    public function __construct($action, $startInOld, $endInOld, $startInNew, $endInNew)
+    {
         $this->action = $action;
         $this->startInOld = $startInOld;
         $this->endInOld = $endInOld;

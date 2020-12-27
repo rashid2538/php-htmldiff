@@ -112,11 +112,11 @@ class WordSplitter
                         if (count($currentWord) != 0) {
                             $currentWord[] = $character;
                             $words[] = implode('', $currentWord);
-                            if (count($words) > 2 && Utils::isWhiteSpace($words[\strlen($words) - 2]) && Utils::isWhiteSpace($words[\strlen($words) - 1])) {
-                                $w1 = $words[\strlen($words) - 2];
-                                $w2 = $words[\strlen($words) - 1];
-                                unset($words[\strlen($words) - 1]);
-                                unset($words[\strlen($words) - 1]);
+                            if (count($words) > 2 && Utils::isWhiteSpace($words[\count($words) - 2]) && Utils::isWhiteSpace($words[\count($words) - 1])) {
+                                $w1 = $words[\count($words) - 2];
+                                $w2 = $words[\count($words) - 1];
+                                unset($words[\count($words) - 1]);
+                                unset($words[\count($words) - 1]);
                                 $currentWord = str_split($w1);
                                 $currentWord = array_merge($currentWord, str_split($w2));
                                 $mode = Mode::Whitespace;
@@ -127,7 +127,7 @@ class WordSplitter
                             $currentWord = [];
                             $mode = Mode::Character;
                         }
-                    } else if (Utils . isWord($character)) {
+                    } else if (Utils::isWord($character)) {
                         $currentWord[] = $character;
                     } else {
                         if (count($currentWord) != 0) {
@@ -153,12 +153,17 @@ class WordSplitter
             return $blockLocations;
         }
         foreach ($blockExpressions as $exp) {
-            /* if(preg_match_all($exp, $html, $matches)) {
-                foreach($matches as $match) {
-                    if()
+            if (preg_match_all($exp, $html, $matches)) {
+                $processedMatches = [];
+                foreach ($matches as $match) {
+                    $matchIndex = strpos($html, $match[0], isset($processedMatches[$matches[0]]) ? $processedMatches[$matches[0]] + 1 : 0);
+                    $processedMatches[$matches[0]] = $matchIndex;
+                    if (isset($blockLocations[$matchIndex])) {
+                        throw new \Exception("One of more block expressions result in a text sequence that overlaps. Current expression: {$exp}");
+                    }
+                    $blockLocations[$matchIndex] = $matchIndex + strlen($match[0]);
                 }
-                var_dump($exp, $html, $matches, 'fix this');die;
-            } */
+            }
         }
         return $blockLocations;
     }

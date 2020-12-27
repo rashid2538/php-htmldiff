@@ -35,7 +35,7 @@ class HtmlDiff
     private $_blockExpressions = [];
 
     public $repeatingWordsAccuracy = 1;
-    public $ignoreWhitespaceDifferences;
+    public $ignoreWhitespaceDifferences = false;
     public $orphanMatchThreshold;
 
     public function __construct($oldText, $newText)
@@ -59,7 +59,8 @@ class HtmlDiff
         return $this->_newHtml;
     }
 
-    public function addBlockExpression($regEx) {
+    public function addBlockExpression($regEx)
+    {
         $this->_blockExpressions[] = $regEx;
     }
 
@@ -225,6 +226,7 @@ class HtmlDiff
         $operations = [];
 
         $matches = $this->matchingBlocks();
+
         $matches[] = new Match(count($this->_oldWords), count($this->_newWords), 0);
 
         $matchesWithoutOrphans = $this->removeOrphans($matches);
@@ -318,31 +320,34 @@ class HtmlDiff
 
     private function matchingBlocks()
     {
-        return $this->findMatchingBlocks(0, count($this->_oldWords), 0, count($this->_newWords));
+        $matchingBlocks = [];
+        $this->findMatchingBlocks(0, count($this->_oldWords), 0, count($this->_newWords), $matchingBlocks);
+
+        die('done');
+        return $matchingBlocks;
     }
 
-    private function findMatchingBlocks($startInOld, $endInOld, $startInNew, $endInNew)
+    private function findMatchingBlocks($startInOld, $endInOld, $startInNew, $endInNew, &$matchingBlocks)
     {
-        $matchingBlocks = [];
         $match = $this->findMatch($startInOld, $endInOld, $startInNew, $endInNew);
         if ($match != null) {
             if ($startInOld < $match->startInOld && $startInNew < $match->startInNew) {
-                $matchingBlocks = array_merge($matchingBlocks, FindMatchingBlocks($startInOld, $match->startInOld, $startInNew, $match->startInNew));
+                $this->findMatchingBlocks($startInOld, $match->startInOld, $startInNew, $match->startInNew, $matchingBlocks);
             }
 
             $matchingBlocks[] = $match;
 
             if ($match->endInOld < $endInOld && $match->endInNew < $endInNew) {
-                $matchingBlocks = array_merge($matchingBlocks, FindMatchingBlocks($match->endInOld, $endInOld, $match->endInNew, $endInNew));
+                $this->findMatchingBlocks($match->endInOld, $endInOld, $match->endInNew, $endInNew, $matchingBlocks);
             }
         }
-        return $matchingBlocks;
     }
 
     private function findMatch($startInOld, $endInOld, $startInNew, $endInNew)
     {
         for ($i = $this->_matchGranularity; $i > 0; $i--) {
             $match = (new MatchFinder($this->_oldWords, $this->_newWords, $startInOld, $endInOld, $startInNew, $endInNew, new MatchOptions($i, $this->repeatingWordsAccuracy, $this->ignoreWhitespaceDifferences)))->findMatch();
+
             if (!is_null($match)) {
                 return $match;
             }
