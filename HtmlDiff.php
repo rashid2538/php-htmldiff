@@ -44,14 +44,13 @@
 		}
 
 		private function purifyHtml( $html, $tags = null ) {
-			if( class_exists( 'Tidy' ) && false ) {
-				$config = array( 'output-xhtml'   => true, 'indent' => false );
-				$tidy = new tidy;
-				$tidy->parseString( $html, $config, 'utf8' );
-				$html = ( string )$tidy;
-				return $this->getStringBetween( $html, '<body>' );
-			}
-			return $html;
+            $bodyStart = stripos($html, '<body>');
+            $bodyEnd = stripos($html, '</body>');
+            if ($bodyStart !== false && $bodyEnd !== false) {
+                $bodyStart += strlen('<body>');
+                $html = substr($html, $bodyStart, $bodyEnd - $bodyStart);
+            }
+            return $html;
 		}
 
 		public function build() {
@@ -263,7 +262,7 @@
 						}
 					}
 				}
-				if( count( $words ) == 0 && count( $specialCaseTagInjection ) == 0 ) {
+				if((is_array($words) && count( $words ) == 0) && (is_array($specialCaseTagInjection) && count( $specialCaseTagInjection ) == 0)) {
 					break;
 				}
 				if( $specialCaseTagInjectionIsBefore ) {
@@ -273,7 +272,7 @@
 			                if( isset($workTag[0]) && $this->IsOpeningTag( $workTag[ 0 ] ) && !$this->IsClosingTag( $workTag[ 0 ] ) ) {
 			                    if( strpos( $workTag[ 0 ], 'class=' ) ) {
 			                        $workTag[ 0 ] = str_replace( 'class="', 'class="diffmod ', $workTag[ 0 ] );
-			                        $workTag[ 0 ] = str_replace( "class='", 'class="diffmod ', $workTag[ 0 ] );
+			                        $workTag[ 0 ] = str_replace( "class='", "class='diffmod ", $workTag[ 0 ] );
 			                    } else {
 			                        $workTag[ 0 ] = str_replace( ">", ' class="diffmod">', $workTag[ 0 ] );
 			                    }
@@ -288,6 +287,9 @@
 		}
 
 		private function WrapText( $text, $tagName, $cssClass ) {
+            if (trim(strip_tags($text)) === '') {
+                return $text;
+            }
 			return sprintf( '<%1$s class="%2$s">%3$s</%1$s>', $tagName, $cssClass, $text );
 		}
 
@@ -338,49 +340,49 @@
 			$positionInOld = 0;
 			$positionInNew = 0;
 			$operations = array();
-			$matches = $this->MatchingBlocks();
-			$matches[] = new Match( count( $this->oldWords ), count( $this->newWords ), 0 );
-			foreach(  $matches as $i => $match ) {
-				$matchStartsAtCurrentPositionInOld = ( $positionInOld == $match->StartInOld );
-				$matchStartsAtCurrentPositionInNew = ( $positionInNew == $match->StartInNew );
+			$mtches = $this->MatchingBlocks();
+			$mtches[] = new HtmlDiff_Match( count( $this->oldWords ), count( $this->newWords ), 0 );
+			foreach(  $mtches as $i => $mtch ) {
+				$mtchStartsAtCurrentPositionInOld = ( $positionInOld == $mtch->StartInOld );
+				$mtchStartsAtCurrentPositionInNew = ( $positionInNew == $mtch->StartInNew );
 				$action = 'none';
 
-				if( $matchStartsAtCurrentPositionInOld == false && $matchStartsAtCurrentPositionInNew == false ) {
+				if( $mtchStartsAtCurrentPositionInOld == false && $mtchStartsAtCurrentPositionInNew == false ) {
 					$action = 'replace';
-				} else if( $matchStartsAtCurrentPositionInOld == true && $matchStartsAtCurrentPositionInNew == false ) {
+				} else if( $mtchStartsAtCurrentPositionInOld == true && $mtchStartsAtCurrentPositionInNew == false ) {
 					$action = 'insert';
-				} else if( $matchStartsAtCurrentPositionInOld == false && $matchStartsAtCurrentPositionInNew == true ) {
+				} else if( $mtchStartsAtCurrentPositionInOld == false && $mtchStartsAtCurrentPositionInNew == true ) {
 					$action = 'delete';
 				} else { // This occurs if the first few words are the same in both versions
 					$action = 'none';
 				}
 				if( $action != 'none' ) {
-					$operations[] = new Operation( $action, $positionInOld, $match->StartInOld, $positionInNew, $match->StartInNew );
+					$operations[] = new HtmlDiff_Operation( $action, $positionInOld, $mtch->StartInOld, $positionInNew, $mtch->StartInNew );
 				}
-				if( count( $match ) != 0 ) {
-					$operations[] = new Operation( 'equal', $match->StartInOld, $match->EndInOld(), $match->StartInNew, $match->EndInNew() );
+				if( is_object($mtch) ) {
+					$operations[] = new HtmlDiff_Operation( 'equal', $mtch->StartInOld, $mtch->EndInOld(), $mtch->StartInNew, $mtch->EndInNew() );
 				}
-				$positionInOld = $match->EndInOld();
-				$positionInNew = $match->EndInNew();
+				$positionInOld = $mtch->EndInOld();
+				$positionInNew = $mtch->EndInNew();
 			}
 			return $operations;
 		}
 
 		private function MatchingBlocks() {
-			$matchingBlocks = array();
-			$this->FindMatchingBlocks( 0, count( $this->oldWords ), 0, count( $this->newWords ), $matchingBlocks );
-			return $matchingBlocks;
+			$mtchingBlocks = array();
+			$this->FindMatchingBlocks( 0, count( $this->oldWords ), 0, count( $this->newWords ), $mtchingBlocks );
+			return $mtchingBlocks;
 		}
 
-		private function FindMatchingBlocks( $startInOld, $endInOld, $startInNew, $endInNew, &$matchingBlocks ) {
-			$match = $this->FindMatch( $startInOld, $endInOld, $startInNew, $endInNew );
-			if( $match !== null ) {
-				if( $startInOld < $match->StartInOld && $startInNew < $match->StartInNew ) {
-					$this->FindMatchingBlocks( $startInOld, $match->StartInOld, $startInNew, $match->StartInNew, $matchingBlocks );
+		private function FindMatchingBlocks( $startInOld, $endInOld, $startInNew, $endInNew, &$mtchingBlocks ) {
+			$mtch = $this->FindMatch( $startInOld, $endInOld, $startInNew, $endInNew );
+			if( $mtch !== null ) {
+				if( $startInOld < $mtch->StartInOld && $startInNew < $mtch->StartInNew ) {
+					$this->FindMatchingBlocks( $startInOld, $mtch->StartInOld, $startInNew, $mtch->StartInNew, $mtchingBlocks );
 				}
-				$matchingBlocks[] = $match;
-				if( $match->EndInOld() < $endInOld && $match->EndInNew() < $endInNew ) {
-					$this->FindMatchingBlocks( $match->EndInOld(), $endInOld, $match->EndInNew(), $endInNew, $matchingBlocks );
+				$mtchingBlocks[] = $mtch;
+				if( $mtch->EndInOld() < $endInOld && $mtch->EndInNew() < $endInNew ) {
+					$this->FindMatchingBlocks( $mtch->EndInOld(), $endInOld, $mtch->EndInNew(), $endInNew, $mtchingBlocks );
 				}
 			}
 		}
@@ -394,7 +396,7 @@
 			$bestMatchInOld = $startInOld;
 			$bestMatchInNew = $startInNew;
 			$bestMatchSize = 0;
-			$matchLengthAt = array();
+			$mtchLengthAt = array();
 			for( $indexInOld = $startInOld; $indexInOld < $endInOld; $indexInOld++ ) {
 				$newMatchLengthAt = array();
 				$index = $this->oldWords[ $indexInOld ];
@@ -402,7 +404,7 @@
 					$index = $this->StripTagAttributes( $index );
 				}
 				if( !isset( $this->wordIndices[ $index ] ) ) {
-					$matchLengthAt = $newMatchLengthAt;
+					$mtchLengthAt = $newMatchLengthAt;
 					continue;
 				}
 				foreach( $this->wordIndices[ $index ] as $indexInNew ) {
@@ -412,7 +414,7 @@
 					if( $indexInNew >= $endInNew ) {
 						break;
 					}
-					$newMatchLength = ( isset( $matchLengthAt[ $indexInNew - 1 ] ) ? $matchLengthAt[ $indexInNew - 1 ] : 0 ) + 1;
+					$newMatchLength = ( isset( $mtchLengthAt[ $indexInNew - 1 ] ) ? $mtchLengthAt[ $indexInNew - 1 ] : 0 ) + 1;
 					$newMatchLengthAt[ $indexInNew ] = $newMatchLength;
 					if( $newMatchLength > $bestMatchSize ) {
 						$bestMatchInOld = $indexInOld - $newMatchLength + 1;
@@ -420,13 +422,13 @@
 						$bestMatchSize = $newMatchLength;
 					}
 				}
-				$matchLengthAt = $newMatchLengthAt;
+				$mtchLengthAt = $newMatchLengthAt;
 			}
-			return $bestMatchSize != 0 ? new Match( $bestMatchInOld, $bestMatchInNew, $bestMatchSize ) : null;
+			return $bestMatchSize != 0 ? new HtmlDiff_Match( $bestMatchInOld, $bestMatchInNew, $bestMatchSize ) : null;
 		}
 	}
 
-	class Match {
+	class HtmlDiff_Match {
 
 		public $StartInOld;
 		public $StartInNew;
@@ -447,7 +449,7 @@
 		}
 	}
 
-	class Operation {
+	class HtmlDiff_Operation {
 
 		public $Action;
 		public $StartInOld;
