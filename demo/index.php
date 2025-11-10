@@ -1,6 +1,7 @@
 <?php
 
 	require_once( '../HtmlDiff.php' );
+// 	creating two variable which will make some change to web page according to user interaction. 
 	$html1 = "<p><i>This is</i> some sample text to <strong>demonstrate</strong> the capability of the <strong>HTML diff tool</strong>.</p>
                                 <p>It is based on the <b>Ruby</b> implementation found <a href='http://github.com/myobie/htmldiff'>here</a>. Note how the link has no tooltip</p>
                                 <table cellpadding='0' cellspacing='0'>
